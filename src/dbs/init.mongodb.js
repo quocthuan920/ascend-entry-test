@@ -1,22 +1,24 @@
 
 import mongoose from 'mongoose';
+import dotenv from 'dotenv'
 
-const connectString = 'mongodb+srv://cogino920:Lipt64WF88OYWNde@coginofree.29jxwow.mongodb.net/kimochi?retryWrites=true&w=majority&appName=CoginoFree';
-
+dotenv.config()
+const connectString = process.env.MONGO_URI;
 class Database {
     constructor() {
         this.connect();
     }
 
     connect() {
+        console.log('Connecting to database...: ', connectString);
         mongoose.connect(connectString, { maxPoolSize: 5 })
             .then(() => {
                 console.log('Database connection successful');
             })
             .catch(err => {
-                console.error('Database connection error');
+                console.error('Database connection error:', err.message);
             });
-    }
+    }    
 
     static getInstance() {
         if (!this.instance) {

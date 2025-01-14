@@ -1,6 +1,7 @@
+import bcrypt from "bcrypt";
 import { issueJWT } from "../lib/utils.js";
 import UserModel from "../models/user.model.js";
-import bcrypt from "bcrypt";
+import { responseError, responseSuccess } from "../helpers/responseHelper.js";
 
 class AuthenticationService {
   static register = async (req, res, next) => {
@@ -8,9 +9,7 @@ class AuthenticationService {
 
     const user = await UserModel.findOne({ email }).lean();
     if (user) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "User already exists" });
+      return responseError(res, "User already exists", 400);
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -24,18 +23,14 @@ class AuthenticationService {
       .save()
       .then((user) => {
         const JWT = issueJWT(user);
-        return res.status(200).json({
-          status: "success",
-          message: "User created successfully",
+        return responseSuccess(res, "User created successfully", {
           user,
           token: JWT.token,
           expiresIn: JWT.expires,
         });
       })
       .catch((error) => {
-        return res
-          .status(500)
-          .json({ status: "error", message: error.message });
+        next(error);
       });
   };
 
@@ -44,23 +39,17 @@ class AuthenticationService {
 
     const user = await UserModel.findOne({ email }).lean();
     if (!user) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "Invalid email or password" });
+      return responseError(res, "Invalid email or password", 400);
     }
 
     const validatePassword = await bcrypt.compare(password, user.password);
 
     if (!validatePassword) {
-      return res
-        .status(400)
-        .json({ status: "error", message: "Invalid email or password" });
+      return responseError(res, "Invalid email or password", 400);
     }
 
     const JWT = issueJWT(user);
-    return res.status(200).json({
-      status: "success",
-      message: "Login successfully",
+    return responseSuccess(res, "Login successfully", {
       user,
       token: JWT.token,
       expiresIn: JWT.expires,

@@ -26,9 +26,14 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    role: {
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+    },
   },
   {
-    timestamp: true,
+    timestamps: true,
     collection: COLLECTION_NAME,
   }
 );
